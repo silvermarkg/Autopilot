@@ -16,3 +16,5 @@ Package the WaitForUserDeviceRegistration.ps1 into a Win32 app (.intunewin) and 
 **Detection Rule**
 For a detection rule, specify the path and file and "File or folder exists" detection method:
 `%ProgramData%\DeviceRegistration\WaitForUserDeviceRegistration.tag`
+
+*Note: You also need the /Logging/Logging.psm1 module from this repository. This should be added located in the same folder as the WaitForUserDeviceRegistration.ps1 script*
