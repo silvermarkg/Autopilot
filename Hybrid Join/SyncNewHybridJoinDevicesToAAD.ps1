@@ -67,8 +67,8 @@ catch {
 
 # Get computers modified in last x minutes and that have userCertificate value
 try {
-    $createdTime = [DateTime]::Now.AddHours(-5)
-    $modifiedTime = [DateTime]::Now.AddMinutes(-5)
+    $createdTime = [DateTime]::Now.AddHours(-$CreatedTimeHours)
+    $modifiedTime = [DateTime]::Now.AddMinutes(-$ModifiedTimeMinutes)
     $computers = Get-ADComputer -Filter 'Created -ge $createdTime -and Modified -ge $modifiedTime -and userCertificate -like "*"' -SearchBase $SourceOU
     if ($null -ne $computers) {
         # Get count of devices
