@@ -42,7 +42,16 @@ $TagFile = "$($env:ProgramData)\DeviceRegistration\WaitForUserDeviceRegistration
 New-Item -Path $TagFile -ItemType File -Force | Out-Null
 
 # Start logging
-Import-Module -Name "$($PSScriptRoot)\..\Logging\Logging.psm1"
+if (Test-Path -Path "$($PSScriptRoot)\Logging.psm1" -PathType Leaf) {
+  $LoggingModule = "$($PSScriptRoot)\Logging.psm1"
+}
+elseif (Test-Path -Path "$($PSScriptRoot)\..\Logging\Logging.psm1" -PathType Leaf) {
+  $LoggingModule = "$($PSScriptRoot)\..\Logging\Logging.psm1"
+}
+else {
+  $LoggingModule = "Logging"
+}
+Import-Module -Name $LoggingModule
 Write-LogEntry -Message "Starting..." -Severity Information -Path $LogPath
 
 # Define events
