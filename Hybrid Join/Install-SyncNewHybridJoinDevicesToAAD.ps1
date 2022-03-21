@@ -2,7 +2,7 @@
   Script: Install-SyncNewHybridJoinDevicesToAAD.ps1
   Author: Mark Goodman
   Version: 1.00
-  Date: 18-Mar-2022
+  Date: 21-Mar-2022
 
   Update History
   --------------
@@ -15,6 +15,11 @@
 # Parameters
 [CmdletBinding()]
 param (
+    # Distibguised name of source Organisational Unit
+    [Parameter(Mandatory = $true, Position = 0)]
+    [ValidateNotNullOrEmpty()]
+    [String]$OrgUnitDN,
+
     # TaskRepetition defines the scheduled task repetition interval in minutes
     [Parameter(Mandatory=$false)]
     [Int16]$TaskRepetition = 5
@@ -22,6 +27,10 @@ param (
 
 #region Functions
 #endregion Functions
+
+#region Script environment
+#Requires -RunAsAdministrator
+#endregion Script environment
 
 #region Main code
 # Define variables
@@ -43,21 +52,26 @@ if (Test-Path -Path $SourceScriptPath -PathType Leaf) {
     Copy-Item -Path $SourceScriptPath -Destination $TargetPath -Force
 }
 
-# Create scheduled task
+# Configure scheduled task
 Write-Host -Object "Creating scheduled task '$($TaskName)'"
-$stAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument " -ExecutionPolicy Bypass -File ""$($TargetPath)\$($ScriptName)"" -ModifiedTimeMinutes $TaskRepetition"
+$stAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument " -ExecutionPolicy Bypass -File ""$($TargetPath)\$($ScriptName)"" -OrgUnitDN ""$($OrgUnitDN)"""
 $stTrigger = New-ScheduledTaskTrigger -Daily -DaysInterval 1 -At $TriggerStartTime
-#$stTrigger.ExecutionTimeLimit = (New-TimeSpan -Minutes 30)
 $stTempTrigger = New-ScheduledTaskTrigger -Once -At $TriggerStartTime -RepetitionDuration (New-TimeSpan -Days 1) -RepetitionInterval (New-TimeSpan -Minutes $TaskRepetition)
 $stTempTrigger.Repetition.StopAtDurationEnd = $false
 $stTrigger.Repetition = $stTempTrigger.Repetition
-$stPrincipal = New-ScheduledTaskPrincipal -UserId "LOCALSERVICE" -LogonType ServiceAccount
+$stPrincipal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount
 $stSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances Parallel -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
+
+# Register scheduled task
+$existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+if ($null -ne $existingTask) {
+    $existingTask | Unregister-ScheduledTask -Confirm:$false
+}
 Register-ScheduledTask -TaskName $TaskName -TaskPath "\" -Action $stAction -Trigger $stTrigger -Principal $stPrincipal -Settings $stSettings | Out-Null
 
 # Creating event source
 Write-Host -Object "Creating event source '$($TaskName)"
-New-EventLog -LogName Application -Source $TaskName
+New-EventLog -LogName Application -Source $TaskName -ErrorAction SilentlyContinue
 
 Write-Host -Object "Done"
 #endregion Main code
