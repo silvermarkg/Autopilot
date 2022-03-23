@@ -1,11 +1,12 @@
 <#
   Script: WaitForUserDeviceRegistration.ps1
   Author: Mark Goodman (based on script by Steve Prentice)
-  Version: 1.02
-  Date: 21-Mar-2022
+  Version: 1.03
+  Date: 23-Mar-2022
 
   Update History
   --------------
+  1.03 - Fixed issue with log entry
   1.02 - Improved logging and wait times
   1.01 - Added logging module for improved logging and reduced check to every 5 mins instead of 1 min
   1.00 - Intiial script
@@ -80,7 +81,7 @@ $filterAnyConnectVPNEstablished = @{
   Id = '2039' # The management VPN connection has been established and can now pass data
 }
 
-# Wait for up to 60 minutes, re-checking every 5 minutes...
+# Wait for hybrid join to complete
 $timer = 0
 While (($timer -lt $MaxWaitTime) -and (-Not $exitWhile)) {
     # Let's get some events...
@@ -104,26 +105,25 @@ While (($timer -lt $MaxWaitTime) -and (-Not $exitWhile)) {
       Start-Sleep -Seconds 120
       $timer+= 2
     }
-    elseif ($eventsRegistrationFailed) {
-      Write-LogEntry -Message "Running Automatic-Device-Join task again" -Severity Information -Path $LogPath
-      Start-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName
-      Write-LogEntry -Message "Waiting 2 minutes for task to process..." -Severity Information -Path $LogPath
-      Start-Sleep -Seconds 120
-      $timer += 2
-    }
     else {
       Write-LogEntry -Message "No events indicating successful device registration with Azure AD" -Severity Warning -Path $LogPath
-      Write-LogEntry -Message "Waiting 1 minute for additional events..." -Severity Information -Path $LogPath
-      Start-Sleep -Seconds 60
-      $timer+= 1
-    }
-
-    # Write timeout time remaining
-    if (-Not $exitWhile) {
-      Write-LogEntry -Message "Running for $($timer.toString()) minutes" -Severity Information -Path $LogPath
-      Write-EventLog -Message "Timeout in $(($MaxWaitTime - $timer).toString()) minutes" -Severity Information -Path $LogPath
+      if ($eventsRegistrationFailed) {
+        Write-LogEntry -Message "Running Automatic-Device-Join task again" -Severity Information -Path $LogPath
+        Start-ScheduledTask -TaskPath $TaskPath -TaskName $TaskName
+        Write-LogEntry -Message "Waiting 2 minutes for task to process..." -Severity Information -Path $LogPath
+        Start-Sleep -Seconds 120
+        $timer += 2
+      }
+      else {
+        Write-LogEntry -Message "Waiting 1 minute for additional events..." -Severity Information -Path $LogPath
+        Start-Sleep -Seconds 60
+        $timer+= 1
+      }
     }
 }
+
+# Write total run time
+Write-LogEntry -Message "Total run time: $($timer.toString()) minutes" -Severity Information -Path $LogPath
 
 # Update log when device registration process succeeded
 if ($eventsRegistrationSuccess) { 
