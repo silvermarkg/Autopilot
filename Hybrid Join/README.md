@@ -1,6 +1,6 @@
 # WaitForUserDeviceRegistration
 
-*Originally forked from Steve Prentice https://github.com/steve-prentice/autopilot*
+*Originally forked from Steve Prentice [https://github.com/steve-prentice/autopilot]*
 
 Waits for hybrid join to fully complete, including Azure AD sync so that you can user user ESP. By default it will check for 60 minutes but you can use the `MaxWaitTime` parameter to specific a different period.
 
@@ -16,11 +16,11 @@ Package the WaitForUserDeviceRegistration.ps1 into a Win32 app (.intunewin) and 
 For a detection rule, specify the path and file and "File or folder exists" detection method:
 `%ProgramData%\DeviceRegistration\WaitForUserDeviceRegistration.tag`
 
-*Note: You also need the /Logging/Logging.psm1 module from this repository. This should be located in the same folder as the WaitForUserDeviceRegistration.ps1 script*
+*Note: You also need my [https://github.com/silvermarkg/PowerShell/tree/main/Logging] module. Place the `Logging.psm1` module in the same folder as the WaitForUserDeviceRegistration.ps1 script*
 
 # SyncNewHybridJoinDevicesToAAD
 
-*Originally forked from Steve Prentice https://github.com/steve-prentice/autopilot*
+*Originally forked from Steve Prentice [https://github.com/steve-prentice/autopilot]*
 
 The SyncNewHybridJoinDevicestoAAD script triggers an ADDConnect Delta Sync if new objects are found to be have been created in the OU in question, this is helpful to speed up Hybrid AD join and helps avoid the AAD authentication prompt during Autopilot user phase.
 
