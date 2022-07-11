@@ -1,12 +1,13 @@
 <#
   Script: Install-SyncNewHybridJoinDevicesToAAD.ps1
   Author: Mark Goodman
-  Version: 1.01
-  Date: 29-Mar-2022
+  Version: 1.02
+  Date: 11-Jul-2022
 
   Update History
   --------------
-  1.01 - Change scheduled task to ignore new task if already running to prevent issues
+  1.02 - Changed scheduled task to not run if missed scheduled time as this is running frequently anyway
+  1.01 - Changed scheduled task to ignore new task if already running to prevent issues
   1.00 - Intiial script
   
   Notes:
@@ -61,7 +62,7 @@ $stTempTrigger = New-ScheduledTaskTrigger -Once -At $TriggerStartTime -Repetitio
 $stTempTrigger.Repetition.StopAtDurationEnd = $false
 $stTrigger.Repetition = $stTempTrigger.Repetition
 $stPrincipal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount
-$stSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
+$stSettings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
 
 # Register scheduled task
 $existingTask = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
