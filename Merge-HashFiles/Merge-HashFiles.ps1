@@ -22,6 +22,7 @@ if (Test-Path -Path $Path -PathType Container) {
 else {
   $ImportPath = Split-Path -Path $Path -Parent
 }
+$ImportPath = Join-Path -Path $ImportPath -ChildPath "import.csv"
 
 # Get hash file content and write to Import file
 $Content = Get-Content -Path $Path
