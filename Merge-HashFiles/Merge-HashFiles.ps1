@@ -30,3 +30,9 @@ $Content[0] | Set-Content -Path $ImportPath
 for ($i = 1; $i -lt $Content.Count; $i += 2) {
   $Content[$i] | Add-Content -Path $ImportPath
 }
+
+# Output input file serail numbers and count for confirmation
+$Devices = Import-Csv -Path $ImportPath
+Write-Host -Object "$($Devices.Count) devices added"
+Write-Host -Object "Devices added"
+$Devices.'Device Serial Number'
